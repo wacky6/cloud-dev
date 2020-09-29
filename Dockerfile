@@ -6,6 +6,7 @@ ENV WORKDIR="/workspace/" \
     CODE_SERVER_BIN="/usr/local/code-server/bin/code-server"
 
 ARG ARCH="amd64"
+ENV ARCH=$ARCH
 ARG CODE_SERVER_VER="3.5.0"
 
 ARG PKGS="zsh git curl tar gzip procps"
@@ -13,6 +14,8 @@ ARG VSC_EXTENSIONS="eamodio.gitlens"
 
 USER root
 WORKDIR ${WORKDIR}
+
+COPY /dev-env/* /dev-env/
 
 RUN    apt update \
     && DEBIAN_FRONTEND=noninteractive apt install -y ${PKGS} \
@@ -27,10 +30,8 @@ RUN    apt update \
     && git clone --depth 1 https://github.com/wacky6/my_zshrc ${HOME}/my_zshrc \
     && rm -f ${HOME}/.zshrc \
     && ln -s ${HOME}/my_zshrc/zshrc ${HOME}/.zshrc \
-    && for extension in ${VSC_EXTENSIONS} ; do ${CODE_SERVER_BIN} --install-extension "$extension" ; done \
-    && apt-get clean
-
-COPY dev-init.sh /dev-env/
+    && apt-get clean \
+    && /dev-env/install-extensions.sh ${VSC_EXTENSIONS}
 
 EXPOSE 9000
 
